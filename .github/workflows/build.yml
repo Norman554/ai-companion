@@ -21,9 +21,16 @@ jobs:
           sed -i 's/package.name = .*/package.name = aicompanion/' buildozer.spec
           sed -i 's/requirements = .*/requirements = python3,kivy/' buildozer.spec
           echo "android.accept_sdk_license = True" >> buildozer.spec
+      - run: buildozer android debug || true
       - run: |
-          yes | /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk --licenses
-          /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;33.0.0" "platforms;android-33"
+          SDK=/home/runner/.buildozer/android/platform/android-sdk
+          if [ -f $SDK/tools/bin/sdkmanager ]; then
+            yes | $SDK/tools/bin/sdkmanager --sdk_root=$SDK --licenses
+            $SDK/tools/bin/sdkmanager --sdk_root=$SDK "build-tools;33.0.0" "platforms;android-33"
+          elif [ -f $SDK/cmdline-tools/latest/bin/sdkmanager ]; then
+            yes | $SDK/cmdline-tools/latest/bin/sdkmanager --sdk_root=$SDK --licenses
+            $SDK/cmdline-tools/latest/bin/sdkmanager --sdk_root=$SDK "build-tools;33.0.0" "platforms;android-33"
+          fi
       - run: buildozer android debug
       - uses: actions/upload-artifact@v4
         with:
