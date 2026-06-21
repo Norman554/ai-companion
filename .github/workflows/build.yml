@@ -1,0 +1,28 @@
+name: Build APK
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install buildozer
+      - run: |
+          echo y | buildozer init
+          sed -i 's/title = .*/title = AI Companion/' buildozer.spec
+          sed -i 's/package.name = .*/package.name = aicompanion/' buildozer.spec
+          sed -i 's/requirements = .*/requirements = python3,kivy/' buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
+      - run: buildozer android debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: bin/*.apk
